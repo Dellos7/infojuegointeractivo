@@ -38,10 +38,12 @@ export interface CompletedPhraseRecord {
   mistakes: number;
   scoreEarned: number;
   completedAt: string;
+  playerName?: string;
 }
 
 export interface GameProgress {
   topicId: string;
+  playerName?: string;
   currentPhraseIndex: number;
   totalScore: number;
   completedRecords: CompletedPhraseRecord[];

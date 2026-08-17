@@ -64,6 +64,36 @@
           "difficulty": "Difícil"
         }
       ]
+    },
+        {
+      "id": "prueba",
+      "accessCode": "PRUEBA",
+      "title": "Prueba",
+      "description": "Una Prueba.",
+      "icon": "Globe",
+      "phrases": [
+        {
+          "id": "prueba-1",
+          "clue": "Una Prueba.",
+          "fullSentence": "Una Prueba.",
+          "estimatedTime": 10,
+          "difficulty": "Fácil"
+        },
+               {
+          "id": "prueba-2",
+          "clue": "Una Prueba.",
+          "fullSentence": "Una Prueba.",
+          "estimatedTime": 10,
+          "difficulty": "Fácil"
+        },
+               {
+          "id": "prueba-3",
+          "clue": "Una Prueba.",
+          "fullSentence": "Una Prueba.",
+          "estimatedTime": 10,
+          "difficulty": "Fácil"
+        }
+      ]
     }
   ]
 }

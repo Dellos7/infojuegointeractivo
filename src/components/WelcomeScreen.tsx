@@ -4,14 +4,15 @@ import {
   ArrowRight,
   Layers,
   AlertCircle,
-  HelpCircle,
+  User,
+  Sparkles,
 } from 'lucide-react';
 import { TopicItem, GameProgress } from '../types';
 
 interface WelcomeScreenProps {
   topics: TopicItem[];
   selectedTopic: TopicItem;
-  onSelectTopicAndStart: (topic: TopicItem) => void;
+  onSelectTopicAndStart: (topic: TopicItem, playerName: string) => void;
   savedProgress: GameProgress | null;
   onOpenHistory: () => void;
 }
@@ -23,13 +24,24 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   savedProgress,
   onOpenHistory,
 }) => {
+  const [playerName, setPlayerName] = useState<string>(() => {
+    return localStorage.getItem('educaplay_player_name') || savedProgress?.playerName || '';
+  });
   const [inputCode, setInputCode] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isShaking, setIsShaking] = useState<boolean>(false);
 
-  const handleSubmitCode = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanName = playerName.trim();
     const cleanCode = inputCode.trim().toUpperCase();
+
+    if (!cleanName) {
+      setErrorMsg('Por favor, introduce tu nombre antes de comenzar.');
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+      return;
+    }
 
     if (!cleanCode) {
       setErrorMsg('Por favor, escribe el código de la actividad.');
@@ -50,7 +62,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
     if (matched) {
       setErrorMsg(null);
-      onSelectTopicAndStart(matched);
+      // Persist player name in localStorage for convenience
+      localStorage.setItem('educaplay_player_name', cleanName);
+      onSelectTopicAndStart(matched, cleanName);
     } else {
       setErrorMsg(
         'Código no válido. Por favor, revisa el código facilitado por tu profesor/a e inténtalo de nuevo.'
@@ -68,7 +82,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       {/* Main Access Code Card */}
       <div className="w-full bg-white rounded-[32px] shadow-sm border border-[#EBE7DF] overflow-hidden">
         {/* Header */}
-        <div className="bg-[#F2F0EB] text-[#43423E] p-8 text-center border-b border-[#EBE7DF]">
+        <div className="bg-[#F2F0EB] text-[#43423E] p-7 md:p-8 text-center border-b border-[#EBE7DF]">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-[#EBE7DF] text-[#5A5A40] shadow-2xs mx-auto mb-3">
             <KeyRound className="w-7 h-7 text-[#A3B18A]" />
           </div>
@@ -76,20 +90,45 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <Layers className="w-3 h-3 text-[#A3B18A]" /> Actividad Interactiva
           </span>
           <h1 className="text-2xl md:text-3xl font-serif italic text-[#5A5A40] tracking-tight font-serif-natural">
-            Introduce el código del juego
+            Acceso a la Actividad
           </h1>
           <p className="mt-2 text-xs md:text-sm text-[#8C8984] max-w-md mx-auto font-normal leading-relaxed">
-            Ingresa el código proporcionado por tu profesor/a para comenzar a ordenar las oraciones.
+            Escribe tu nombre y el código de la actividad facilitado por tu profesor/a para comenzar.
           </p>
         </div>
 
-        {/* Code Input Form */}
-        <form onSubmit={handleSubmitCode} className="p-6 md:p-8 space-y-6">
-          <div className="space-y-2">
+        {/* Form with Name and Code */}
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5">
+          {/* 1. Name Input */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="student-name-input"
+              className="text-[11px] uppercase tracking-[0.15em] font-bold text-[#5A5A40] flex items-center gap-1.5"
+            >
+              <User className="w-3.5 h-3.5 text-[#A3B18A]" />
+              Nombre y Apellidos del alumno/a
+            </label>
+            <input
+              id="student-name-input"
+              type="text"
+              value={playerName}
+              onChange={(e) => {
+                setPlayerName(e.target.value);
+                if (errorMsg) setErrorMsg(null);
+              }}
+              placeholder="Ej: Laura García Morales"
+              autoFocus
+              className="w-full text-base sm:text-lg font-medium px-4 py-3.5 rounded-2xl bg-[#FAF9F6] border-2 border-[#E5E0D5] text-[#43423E] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all shadow-2xs"
+            />
+          </div>
+
+          {/* 2. Code Input */}
+          <div className="space-y-1.5">
             <label
               htmlFor="activity-code-input"
-              className="text-[11px] uppercase tracking-[0.15em] font-bold text-[#5A5A40] block"
+              className="text-[11px] uppercase tracking-[0.15em] font-bold text-[#5A5A40] flex items-center gap-1.5"
             >
+              <KeyRound className="w-3.5 h-3.5 text-[#A3B18A]" />
               Código de la actividad
             </label>
             <div className={`relative ${isShaking ? 'animate-shake' : ''}`}>
@@ -101,26 +140,27 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   setInputCode(e.target.value.toUpperCase());
                   if (errorMsg) setErrorMsg(null);
                 }}
-                placeholder="Escribe el código aquí..."
-                autoFocus
-                className="w-full text-center text-xl sm:text-2xl font-mono uppercase tracking-widest px-4 py-4 rounded-2xl bg-[#FAF9F6] border-2 border-[#E5E0D5] text-[#43423E] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all shadow-2xs"
+                placeholder="Ej: SO101"
+                className="w-full text-center text-xl sm:text-2xl font-mono uppercase tracking-widest px-4 py-3.5 rounded-2xl bg-[#FAF9F6] border-2 border-[#E5E0D5] text-[#43423E] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all shadow-2xs"
               />
             </div>
-            {errorMsg && (
-              <div className="p-3 bg-[#FAF9F6] border border-[#E07A5F] rounded-xl text-[#E07A5F] text-xs font-semibold flex items-start gap-2 animate-shake">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{errorMsg}</span>
-              </div>
-            )}
           </div>
+
+          {/* Error Message */}
+          {errorMsg && (
+            <div className="p-3 bg-[#FAF9F6] border border-[#E07A5F] rounded-xl text-[#E07A5F] text-xs font-semibold flex items-start gap-2 animate-shake">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
           {/* Submit Action */}
           <button
             type="submit"
             id="btn-submit-code"
-            className="w-full py-4 bg-[#5A5A40] hover:bg-[#474732] active:scale-98 text-white font-bold text-sm tracking-wider uppercase rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+            className="w-full py-4 bg-[#5A5A40] hover:bg-[#474732] active:scale-98 text-white font-bold text-sm tracking-wider uppercase rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer mt-2"
           >
-            <span>Entrar a la actividad</span>
+            <span>Comenzar Juego</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>

@@ -34,6 +34,11 @@ export default function App() {
   const [dataset, setDataset] = useState<PhrasesDataset>(() => getInitialDataset());
   const [selectedTopic, setSelectedTopic] = useState<TopicItem>(() => dataset.topics[0]);
 
+  // Player state
+  const [playerName, setPlayerName] = useState<string>(() => {
+    return localStorage.getItem('educaplay_player_name') || getSavedProgress()?.playerName || '';
+  });
+
   // Game state
   const [currentScreen, setCurrentScreen] = useState<GameScreen>('welcome');
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState<number>(0);
@@ -109,6 +114,7 @@ export default function App() {
     (newRecords: CompletedPhraseRecord[], newScore: number, phraseIdx: number) => {
       const progress: GameProgress = {
         topicId: selectedTopic.id,
+        playerName,
         currentPhraseIndex: phraseIdx,
         totalScore: newScore,
         completedRecords: newRecords,
@@ -117,11 +123,15 @@ export default function App() {
       saveProgress(progress);
       setSavedProgress(progress);
     },
-    [selectedTopic.id]
+    [selectedTopic.id, playerName]
   );
 
-  // Start game with a verified topic from access code
-  const handleStartGameWithTopic = (topic: TopicItem) => {
+  // Start game with a verified topic and student name from access code
+  const handleStartGameWithTopic = (topic: TopicItem, name?: string) => {
+    const activePlayerName = name || playerName;
+    if (name) {
+      setPlayerName(name);
+    }
     setSelectedTopic(topic);
     setCurrentPhraseIndex(0);
     setTotalScore(0);
@@ -133,6 +143,7 @@ export default function App() {
 
     const progress: GameProgress = {
       topicId: topic.id,
+      playerName: activePlayerName,
       currentPhraseIndex: 0,
       totalScore: 0,
       completedRecords: [],
@@ -144,7 +155,7 @@ export default function App() {
 
   // Start new game
   const handleStartGame = () => {
-    handleStartGameWithTopic(selectedTopic);
+    handleStartGameWithTopic(selectedTopic, playerName);
   };
 
   // Resume saved game
@@ -152,6 +163,10 @@ export default function App() {
     if (!savedProgress || savedProgress.topicId !== selectedTopic.id) {
       handleStartGame();
       return;
+    }
+
+    if (savedProgress.playerName) {
+      setPlayerName(savedProgress.playerName);
     }
 
     const nextIndex = Math.min(
@@ -170,7 +185,11 @@ export default function App() {
 
   // Called when user finishes solving one phrase
   const handlePhraseCompleted = (record: CompletedPhraseRecord) => {
-    const newRecords = [...completedRecords, record];
+    const recordWithPlayer: CompletedPhraseRecord = {
+      ...record,
+      playerName: playerName || undefined,
+    };
+    const newRecords = [...completedRecords, recordWithPlayer];
     const newScore = totalScore + record.scoreEarned;
 
     setCompletedRecords(newRecords);
@@ -288,6 +307,7 @@ export default function App() {
         {currentScreen === 'game_finished' && (
           <EndGameScreen
             topic={selectedTopic}
+            playerName={playerName}
             totalScore={totalScore}
             completedRecords={completedRecords}
             onPlayAgain={handleStartGame}
