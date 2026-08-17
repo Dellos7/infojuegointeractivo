@@ -10,97 +10,58 @@
         {
           "id": "so-1",
           "clue": "¿Qué es un Sistema Operativo?",
-          "fullSentence": "Un Sistema Operativo es una capa intermedia entre los programas y el ordenador que utiliza el usuario .",
-          "estimatedTime": 45,
+          "fullSentence": "Un Sistema Operativo es un programa que se utiliza como capa intermedia entre los programas que usa un usuario y un ordenador.",
+          "estimatedTime": 120,
           "difficulty": "Medio"
         },
         {
           "id": "so-2",
-          "clue": "Función principal del núcleo o kernel",
-          "fullSentence": "El kernel gestiona la memoria y el procesador para ejecutar todas las aplicaciones .",
-          "estimatedTime": 35,
+          "clue": "Característica principal del S.O. Windows",
+          "fullSentence": "La característica principal de Windows es que es un S.O. basado en una interfaz gráfica cuyo elemento principal es la ventana que puede redimensionarse, minimizarse y cerrarse.",
+          "estimatedTime": 180,
           "difficulty": "Fácil"
         },
         {
           "id": "so-3",
-          "clue": "¿Qué permite la interfaz gráfica de usuario (GUI)?",
-          "fullSentence": "La interfaz gráfica permite interactuar con el ordenador mediante ventanas iconos y menús visuales .",
-          "estimatedTime": 40,
+          "clue": "¿Qué es Linux?",
+          "fullSentence": "Linux es un núcleo de Sistema Operativo libre y gratuito basado en Unix.",
+          "estimatedTime": 120,
           "difficulty": "Medio"
         },
         {
           "id": "so-4",
-          "clue": "Almacenamiento y sistema de archivos",
-          "fullSentence": "El sistema de archivos organiza los documentos en directorios jerárquicos de forma segura .",
-          "estimatedTime": 35,
+          "clue": "¿Qué objetivo principal tiene LliureX?",
+          "fullSentence": "LliureX tiene como objetivo principal la introducción de las TIC en el sistema educativo Valenciano.",
+          "estimatedTime": 180,
           "difficulty": "Fácil"
         },
         {
           "id": "so-5",
-          "clue": "Multitarea en sistemas modernos",
-          "fullSentence": "La multitarea permite ejecutar varios procesos simultáneamente compartiendo los recursos del hardware disponible .",
-          "estimatedTime": 50,
+          "clue": "Características fundamentales del S.O. Mac OS",
+          "fullSentence": "Es de pago y sólo puede utilizarse de manera legal sobre el hardware de Apple.",
+          "estimatedTime": 120,
           "difficulty": "Difícil"
-        }
-      ]
-    },
-    {
-      "id": "ciencias-espacio",
-      "accessCode": "CIENCIA",
-      "title": "Ciencia, Espacio y Naturaleza",
-      "description": "Descubre hechos asombrosos sobre el sistema solar, el universo y el medio ambiente.",
-      "icon": "Globe",
-      "phrases": [
-        {
-          "id": "sci-1",
-          "clue": "¿Por qué brilla el Sol?",
-          "fullSentence": "El Sol genera energía mediante la fusión nuclear de átomos de hidrógeno en su núcleo .",
-          "estimatedTime": 40,
-          "difficulty": "Medio"
         },
         {
-          "id": "sci-2",
-          "clue": "Fotosíntesis en las plantas",
-          "fullSentence": "Las plantas absorben dióxido de carbono y liberan oxígeno gracias a la luz solar .",
-          "estimatedTime": 35,
-          "difficulty": "Fácil"
+          "id": "so-6",
+          "clue": "Característica más puntera del S.O. iOS",
+          "fullSentence": "La característica más puntera de este sistema fue el soporte de la tecnología multitouch.",
+          "estimatedTime": 180,
+          "difficulty": "Difícil"
         },
         {
-          "id": "sci-3",
-          "clue": "La gravedad en el universo",
-          "fullSentence": "La gravedad es la fuerza invisible que mantiene a los planetas orbitando alrededor de las estrellas .",
-          "estimatedTime": 45,
-          "difficulty": "Medio"
-        }
-      ]
-    },
-    {
-      "id": "literatura-gramatica",
-      "accessCode": "LENGUA",
-      "title": "Lengua, Ortografía y Literatura",
-      "description": "Mejora tu vocabulario y comprensión con reglas gramaticales y citas célebres.",
-      "icon": "BookOpen",
-      "phrases": [
-        {
-          "id": "lit-1",
-          "clue": "Cita célebre de Don Quijote de la Mancha",
-          "fullSentence": "En un lugar de la Mancha de cuyo nombre no quiero acordarme vivía un hidalgo .",
-          "estimatedTime": 40,
-          "difficulty": "Medio"
+          "id": "so-7",
+          "clue": "¿Qué es Android?",
+          "fullSentence": "Es un S.O. diseñado para su uso en tablets y dispositivos móviles de última generación conocidos como smartphones.",
+          "estimatedTime": 180,
+          "difficulty": "Difícil"
         },
         {
-          "id": "lit-2",
-          "clue": "Definición de las palabras esdrújulas",
-          "fullSentence": "Todas las palabras esdrújulas llevan tilde siempre en la antepenúltima sílaba sin excepción .",
-          "estimatedTime": 35,
-          "difficulty": "Fácil"
-        },
-        {
-          "id": "lit-3",
-          "clue": "La importancia de la lectura",
-          "fullSentence": "Leer diariamente estimula la imaginación y amplía el vocabulario de las personas curiosas .",
-          "estimatedTime": 30,
-          "difficulty": "Fácil"
+          "id": "so-8",
+          "clue": "¿Qué son las aplicaciones?",
+          "fullSentence": "Las aplicaciones son programas que se ejecutan sobre un Sistema Operativo y que son manejadas directamente por los usuarios.",
+          "estimatedTime": 180,
+          "difficulty": "Difícil"
         }
       ]
     }
