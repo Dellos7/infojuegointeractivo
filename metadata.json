@@ -1,0 +1,6 @@
+{
+  "name": "Ordenar Palabras - Educaplay",
+  "description": "Juego interactivo educativo estilo Educaplay para ordenar palabras y formar oraciones con cronómetro, puntuación y registro de progreso.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
