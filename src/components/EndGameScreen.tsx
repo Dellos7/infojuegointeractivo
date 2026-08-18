@@ -17,9 +17,12 @@ import {
   Calendar,
   Check,
   Zap,
+  Cpu,
+  ShieldCheck,
+  Target,
+  Sparkles,
 } from 'lucide-react';
 import { CompletedPhraseRecord, TopicItem } from '../types';
-import { soundFx } from '../utils/audio';
 
 interface EndGameScreenProps {
   topic: TopicItem;
@@ -45,26 +48,24 @@ export const EndGameScreen: React.FC<EndGameScreenProps> = ({
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
 
   useEffect(() => {
-    soundFx.playGameFinish();
-
     // Celebration fireworks
     const duration = 2.5 * 1000;
     const end = Date.now() + duration;
 
     const frame = () => {
       confetti({
-        particleCount: 4,
+        particleCount: 5,
         angle: 60,
-        spread: 55,
+        spread: 60,
         origin: { x: 0 },
-        colors: ['#A3B18A', '#5A5A40', '#E07A5F', '#D4A373'],
+        colors: ['#38BDF8', '#3B82F6', '#10B981', '#F59E0B'],
       });
       confetti({
-        particleCount: 4,
+        particleCount: 5,
         angle: 120,
-        spread: 55,
+        spread: 60,
         origin: { x: 1 },
-        colors: ['#A3B18A', '#5A5A40', '#3b82f6'],
+        colors: ['#38BDF8', '#3B82F6', '#10B981', '#F59E0B'],
       });
 
       if (Date.now() < end) {
@@ -78,6 +79,29 @@ export const EndGameScreen: React.FC<EndGameScreenProps> = ({
   const totalMistakes = completedRecords.reduce((acc, r) => acc + r.mistakes, 0);
   const totalPhrasesCount = topic.phrases.length;
   const completedCount = completedRecords.length;
+  const accuracy = totalPhrasesCount > 0
+    ? Math.max(0, Math.round(((totalPhrasesCount * 100) - (totalMistakes * 15)) / totalPhrasesCount))
+    : 100;
+
+  // Rank determination
+  let rank = 'S';
+  let rankColor = 'text-[#F59E0B] border-[#F59E0B] bg-[#78350F]/40';
+  let rankLabel = 'RANGO S - MAESTRO DIGITAL';
+
+  if (completedCount < totalPhrasesCount || accuracy < 70) {
+    rank = 'C';
+    rankColor = 'text-[#94A3B8] border-[#94A3B8] bg-[#1E293B]';
+    rankLabel = 'RANGO C - INICIADO';
+  } else if (accuracy < 85) {
+    rank = 'B';
+    rankColor = 'text-[#38BDF8] border-[#38BDF8] bg-[#0C4A6E]/40';
+    rankLabel = 'RANGO B - ESPECIALISTA';
+  } else if (accuracy < 95) {
+    rank = 'A';
+    rankColor = 'text-[#10B981] border-[#10B981] bg-[#064E3B]/40';
+    rankLabel = 'RANGO A - EXPERTO';
+  }
+
   const currentDateFormatted = new Date().toLocaleDateString('es-ES', {
     day: '2-digit',
     month: '2-digit',
@@ -86,7 +110,6 @@ export const EndGameScreen: React.FC<EndGameScreenProps> = ({
     minute: '2-digit',
   });
 
-  // Map each phrase in the topic to either its record or uncompleted
   const phrasesReport = topic.phrases.map((phrase, idx) => {
     const record = completedRecords.find((r) => r.phraseId === phrase.id);
     return {
@@ -102,23 +125,23 @@ export const EndGameScreen: React.FC<EndGameScreenProps> = ({
 
     try {
       setIsDownloading(true);
-      // Generate high-res image
       const dataUrl = await toPng(certificateRef.current, {
         cacheBust: true,
         pixelRatio: 2,
-        backgroundColor: '#FAF9F6',
+        backgroundColor: '#0B0F19',
+        skipFonts: true,
       });
 
-      const cleanPlayerName = (playerName || 'alumno')
+      const cleanPlayerName = (playerName || 'jugador')
         .toLowerCase()
         .replace(/[^a-z0-9]/gi, '_');
-      const cleanTopic = (topic.title || 'actividad')
+      const cleanTopic = (topic.title || 'mision')
         .toLowerCase()
         .replace(/[^a-z0-9]/gi, '_')
         .substring(0, 20);
 
       const link = document.createElement('a');
-      link.download = `resumen_${cleanPlayerName}_${cleanTopic}.png`;
+      link.download = `informe_mision_${cleanPlayerName}_${cleanTopic}.png`;
       link.href = dataUrl;
       link.click();
 
@@ -136,123 +159,142 @@ export const EndGameScreen: React.FC<EndGameScreenProps> = ({
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full bg-white rounded-[32px] shadow-sm border border-[#EBE7DF] overflow-hidden"
+        className="w-full bg-[#0F172A] rounded-[28px] shadow-2xl border border-[#1E293B] overflow-hidden glow-blue"
       >
-        {/* Certificate / Summary Container to Capture */}
-        <div ref={certificateRef} className="p-6 md:p-10 bg-white space-y-6">
+        {/* Certificate Container to Capture */}
+        <div ref={certificateRef} className="p-6 md:p-8 bg-[#0B0F19] space-y-6 text-[#E2E8F0] border-b border-[#1E293B]">
           {/* Header Banner */}
-          <div className="bg-[#F2F0EB] text-[#43423E] p-6 md:p-8 rounded-3xl text-center relative border border-[#EBE7DF]">
-            <div className="relative z-10 space-y-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#5A5A40] text-white shadow-xs mx-auto mb-2 border-2 border-white">
-                <Trophy className="w-8 h-8 fill-current text-white" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-serif italic text-[#5A5A40] tracking-tight font-serif-natural">
-                Resumen de la Actividad
-              </h2>
+          <div className="bg-[#0F172A] p-6 md:p-8 rounded-2xl text-center relative border border-[#1E293B] shadow-lg bg-tech-grid">
+            <div className="flex justify-between items-center text-[10px] font-mono text-[#64748B] mb-2 uppercase">
+              <span>SISTEMA DE EVALUACIÓN DIGITAL</span>
+              <span>ID: MISIÓN-{topic.id.toUpperCase().substring(0, 8)}</span>
+            </div>
 
-              {/* Student & Topic Badge */}
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 pt-1 text-xs sm:text-sm">
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#5A5A40] font-bold border border-[#EBE7DF] shadow-2xs">
-                  <User className="w-3.5 h-3.5 text-[#A3B18A]" />
-                  <span>Alumno/a: {playerName || 'Estudiante'}</span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#5A5A40] font-bold border border-[#EBE7DF] shadow-2xs">
-                  <Layers className="w-3.5 h-3.5 text-[#A3B18A]" />
-                  <span>Actividad: {topic.title}</span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-[#8C8984] font-medium border border-[#EBE7DF] shadow-2xs">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{currentDateFormatted}</span>
-                </span>
-              </div>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#1E293B] border-2 border-[#38BDF8] text-[#38BDF8] shadow-lg mx-auto mb-2 glow-cyan">
+              <Trophy className="w-8 h-8 fill-current text-[#F59E0B]" />
+            </div>
+
+            <h2 className="text-2xl md:text-3xl font-tech font-bold text-white tracking-wider uppercase">
+              Misión Cumplida - Informe Oficial
+            </h2>
+
+            {/* Rank Badge */}
+            <div className="mt-3 flex items-center justify-center">
+              <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-mono font-bold tracking-widest ${rankColor}`}>
+                <Sparkles className="w-3.5 h-3.5" />
+                {rankLabel}
+              </span>
+            </div>
+
+            {/* Player & Topic Info */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 pt-4 text-xs font-mono">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#1E293B] text-[#38BDF8] font-bold border border-[#334155]">
+                <User className="w-3.5 h-3.5" />
+                <span>JUGADOR: {playerName || 'Agente'}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#1E293B] text-white font-bold border border-[#334155]">
+                <Cpu className="w-3.5 h-3.5 text-[#10B981]" />
+                <span>MISIÓN: {topic.title}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[#1E293B] text-[#94A3B8] font-medium border border-[#334155]">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>{currentDateFormatted}</span>
+              </span>
             </div>
           </div>
 
-          {/* Stats Summary Grid */}
+          {/* Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-            <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EBE7DF]">
-              <span className="text-[10px] font-bold text-[#8C8984] uppercase tracking-widest block">
-                Puntuación
+            <div className="p-4 bg-[#0F172A] rounded-2xl border border-[#1E293B] glow-blue">
+              <span className="text-[10px] font-mono font-bold text-[#60A5FA] uppercase tracking-widest block">
+                PUNTUACIÓN XP
               </span>
-              <p className="text-2xl md:text-3xl font-bold text-[#5A5A40] mt-1">{totalScore}</p>
-              <span className="text-xs text-[#8C8984]">puntos obtenidos</span>
+              <p className="text-2xl md:text-3xl font-mono font-bold text-white mt-1">{totalScore}</p>
+              <span className="text-[11px] font-mono text-[#64748B]">puntos obtenidos</span>
             </div>
 
-            <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EBE7DF]">
-              <span className="text-[10px] font-bold text-[#8C8984] uppercase tracking-widest block">
-                Frases
+            <div className="p-4 bg-[#0F172A] rounded-2xl border border-[#1E293B] glow-emerald">
+              <span className="text-[10px] font-mono font-bold text-[#10B981] uppercase tracking-widest block">
+                FRASES RESUELTAS
               </span>
-              <p className="text-2xl md:text-3xl font-bold text-[#5A5A40] mt-1">
+              <p className="text-2xl md:text-3xl font-mono font-bold text-white mt-1">
                 {completedCount} / {totalPhrasesCount}
               </p>
-              <span className="text-xs text-[#8C8984]">
-                {completedCount === totalPhrasesCount ? 'Completadas (100%)' : 'Resueltas'}
+              <span className="text-[11px] font-mono text-[#64748B]">
+                {completedCount === totalPhrasesCount ? 'Completadas (100%)' : 'Completadas'}
               </span>
             </div>
 
-            <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EBE7DF]">
-              <span className="text-[10px] font-bold text-[#8C8984] uppercase tracking-widest block">
-                Tiempo Total
+            <div className="p-4 bg-[#0F172A] rounded-2xl border border-[#1E293B] glow-cyan">
+              <span className="text-[10px] font-mono font-bold text-[#38BDF8] uppercase tracking-widest block">
+                TIEMPO TOTAL
               </span>
-              <p className="text-2xl md:text-3xl font-bold text-[#5A5A40] mt-1">{totalTimeSpent}s</p>
-              <span className="text-xs text-[#8C8984]">empleado</span>
+              <p className="text-2xl md:text-3xl font-mono font-bold text-white mt-1">{totalTimeSpent}s</p>
+              <span className="text-[11px] font-mono text-[#64748B]">duración de sesión</span>
             </div>
 
-            <div className="p-4 bg-[#FAF9F6] rounded-2xl border border-[#EBE7DF]">
-              <span className="text-[10px] font-bold text-[#8C8984] uppercase tracking-widest block">
-                Errores
+            <div className="p-4 bg-[#0F172A] rounded-2xl border border-[#1E293B]">
+              <span className="text-[10px] font-mono font-bold text-[#F87171] uppercase tracking-widest block">
+                PRECISIÓN / FALLOS
               </span>
-              <p className="text-2xl md:text-3xl font-bold text-[#E07A5F] mt-1">{totalMistakes}</p>
-              <span className="text-xs text-[#8C8984]">fallos en clics</span>
+              <p className="text-2xl md:text-3xl font-mono font-bold text-[#EF4444] mt-1">{totalMistakes}</p>
+              <span className="text-[11px] font-mono text-[#64748B]">{accuracy}% precisión</span>
             </div>
           </div>
 
-          {/* List of All Phrases (Completed & Not Completed) */}
+          {/* Phrases Breakdown List */}
           <div className="space-y-3 pt-1">
-            <h3 className="text-xs font-bold text-[#5A5A40] uppercase tracking-wider flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-[#A3B18A]" /> Detalle de frases de la actividad:
+            <h3 className="text-xs font-mono font-bold text-[#38BDF8] uppercase tracking-wider flex items-center gap-2">
+              <Target className="w-4 h-4 text-[#38BDF8]" /> Desglose detallado de la misión:
             </h3>
 
             <div className="space-y-2.5">
               {phrasesReport.map(({ index, phrase, record, isCompleted }) => (
                 <div
                   key={`result-phrase-${phrase.id}-${index}`}
-                  className={`p-3.5 rounded-2xl border transition-all ${
+                  className={`p-3.5 rounded-xl border transition-all ${
                     isCompleted
-                      ? 'border-[#EBE7DF] bg-[#FAF9F6]'
-                      : 'border-[#E07A5F]/30 bg-[#FAF9F6]/50'
+                      ? 'border-[#1E293B] bg-[#0F172A]'
+                      : 'border-[#EF4444]/40 bg-[#7F1D1D]/20'
                   }`}
                 >
-                  <div className="flex flex-wrap items-center justify-between text-xs text-[#8C8984] gap-1 mb-1">
-                    <span className="font-bold text-[#5A5A40]">
+                  <div className="flex flex-wrap items-center justify-between text-xs text-[#94A3B8] gap-1 mb-1 font-mono">
+                    <span className="font-bold text-white">
                       {index}. {phrase.clue}
                     </span>
                     {isCompleted && record ? (
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#A3B18A] flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> +{record.scoreEarned} pts
+                        <span className="font-bold text-[#10B981] flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> +{record.scoreEarned} XP
                         </span>
-                        <span className="text-[11px] text-[#8C8984]">({record.timeSpent}s)</span>
+                        <span className="text-[11px] text-[#64748B]">({record.timeSpent}s)</span>
                         {record.mistakes > 0 && (
-                          <span className="text-[11px] text-[#E07A5F]">
-                            {record.mistakes} {record.mistakes === 1 ? 'error' : 'errores'}
+                          <span className="text-[11px] text-[#EF4444]">
+                            {record.mistakes} {record.mistakes === 1 ? 'fallo' : 'fallos'}
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="font-bold text-[#E07A5F] flex items-center gap-1">
+                      <span className="font-bold text-[#EF4444] flex items-center gap-1">
                         <XCircle className="w-3.5 h-3.5" /> No completada
                       </span>
                     )}
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-white border border-[#EBE7DF] text-xs sm:text-sm font-medium text-[#43423E] flex items-start gap-2">
+                  <div className="p-2.5 rounded-lg bg-[#1E293B] border border-[#334155] text-xs sm:text-sm font-mono text-[#E2E8F0] flex items-start gap-2">
                     {isCompleted ? (
-                      <CheckCircle2 className="w-4 h-4 text-[#A3B18A] shrink-0 mt-0.5" />
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
+                        <span className="text-[#E2E8F0] font-medium">{phrase.fullSentence}</span>
+                      </>
                     ) : (
-                      <XCircle className="w-4 h-4 text-[#E07A5F] shrink-0 mt-0.5" />
+                      <>
+                        <XCircle className="w-4 h-4 text-[#EF4444] shrink-0 mt-0.5" />
+                        <span className="text-[#64748B] italic tracking-wide">
+                          [ Frase no resuelta — Solución oculta ]
+                        </span>
+                      </>
                     )}
-                    <span>{phrase.fullSentence}</span>
                   </div>
                 </div>
               ))}
@@ -261,24 +303,24 @@ export const EndGameScreen: React.FC<EndGameScreenProps> = ({
         </div>
 
         {/* Action Buttons Section */}
-        <div className="p-6 md:p-8 bg-[#FAF9F6] border-t border-[#EBE7DF] flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="p-6 md:p-8 bg-[#0F172A] flex flex-col sm:flex-row gap-3 items-center justify-between">
           {/* Download Image Button */}
           <button
             type="button"
             id="btn-download-summary"
             onClick={handleDownloadImage}
             disabled={isDownloading}
-            className="w-full sm:w-auto px-6 py-3.5 bg-[#A3B18A] hover:bg-[#8f9f76] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-[#0284C7] to-[#06B6D4] hover:from-[#0369A1] hover:to-[#0891B2] active:scale-95 text-white font-tech font-bold text-xs uppercase tracking-widest rounded-xl shadow-lg glow-cyan transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             {downloadSuccess ? (
               <>
-                <Check className="w-4 h-4" />
-                <span>¡Imagen Descargada!</span>
+                <Check className="w-4 h-4 text-white" />
+                <span>¡INFORME DESCARGADO!</span>
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>{isDownloading ? 'Generando imagen...' : 'Descargar Resumen en Imagen (PNG)'}</span>
+                <span>{isDownloading ? 'GENERANDO ARCHIVO...' : 'DESCARGAR INFORME (PNG)'}</span>
               </>
             )}
           </button>
@@ -287,19 +329,19 @@ export const EndGameScreen: React.FC<EndGameScreenProps> = ({
             <button
               id="btn-play-again"
               onClick={onPlayAgain}
-              className="w-full sm:w-auto px-6 py-3.5 bg-[#5A5A40] hover:bg-[#474732] active:scale-95 text-white font-bold text-xs tracking-wider uppercase rounded-2xl shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-[#2563EB] to-[#3B82F6] hover:from-[#1D4ED8] hover:to-[#2563EB] active:scale-95 text-white font-tech font-bold text-xs tracking-widest uppercase rounded-xl shadow-md glow-blue transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
-              <span>Jugar de nuevo</span>
+              <span>REPETIR MISIÓN</span>
             </button>
 
             <button
               id="btn-change-topic"
               onClick={onChangeTopic}
-              className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-[#F2F0EB] active:scale-95 text-[#5A5A40] font-bold text-xs tracking-wider uppercase rounded-2xl border border-[#E5E0D5] transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 bg-[#1E293B] hover:bg-[#334155] active:scale-95 text-[#38BDF8] hover:text-white font-tech font-bold text-xs tracking-widest uppercase rounded-xl border border-[#334155] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Layers className="w-4 h-4 text-[#A3B18A]" />
-              <span>Introducir otro código</span>
+              <Layers className="w-4 h-4 text-[#38BDF8]" />
+              <span>OTRA CLAVE</span>
             </button>
           </div>
         </div>

@@ -26,7 +26,6 @@ import {
   saveProgress,
   clearProgress,
 } from './utils/storage';
-import { soundFx } from './utils/audio';
 import { APP_CONFIG } from './config';
 
 export default function App() {
@@ -49,9 +48,6 @@ export default function App() {
   // Timer state
   const [timeRemaining, setTimeRemaining] = useState<number>(45);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
-
-  // Audio mute state
-  const [isMuted, setIsMuted] = useState<boolean>(() => soundFx.getMuted());
 
   // Modals state
   const [isHistoryOpen, setIsHistoryOpen] = useState<boolean>(false);
@@ -96,7 +92,6 @@ export default function App() {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
             // Time is up!
-            soundFx.playError();
             return 0;
           }
           return prev - 1;
@@ -218,11 +213,22 @@ export default function App() {
     }
   };
 
-  // Toggle sound
-  const handleToggleMute = () => {
-    const nextState = !isMuted;
-    soundFx.setMuted(nextState);
-    setIsMuted(nextState);
+  // Exit to welcome screen without saving active game
+  const handleExitWithoutSaving = () => {
+    setIsTimerRunning(false);
+    clearProgress();
+    setSavedProgress(null);
+    setCompletedRecords([]);
+    setTotalScore(0);
+    setCurrentPhraseIndex(0);
+    setCurrentScreen('welcome');
+  };
+
+  // Finish game immediately with currently solved phrases
+  const handleEarlyFinish = () => {
+    setIsTimerRunning(false);
+    setCurrentScreen('game_finished');
+    persistCurrentProgress(completedRecords, totalScore, selectedTopic.phrases.length);
   };
 
   // Clear history
@@ -258,18 +264,19 @@ export default function App() {
   const isLastPhrase = currentPhraseIndex === selectedTopic.phrases.length - 1;
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-[#43423E] flex flex-col font-sans selection:bg-[#A3B18A]/30">
-      {/* Top Natural Tones Navigation Bar */}
+    <div className="min-h-screen bg-[#0B0F19] bg-tech-dots text-[#E2E8F0] flex flex-col font-sans selection:bg-[#3B82F6] selection:text-white relative overflow-x-hidden">
+      {/* Ambient Cyber Glow */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-gradient-to-b from-[#3B82F6]/10 via-[#06B6D4]/5 to-transparent blur-3xl pointer-events-none -z-10" />
+
+      {/* Top Cyber Gaming Navigation Bar */}
       <Navbar
-        topicTitle={currentScreen === 'welcome' ? 'Acceso al Juego' : selectedTopic.title}
+        topicTitle={currentScreen === 'welcome' ? 'Terminal de Acceso' : selectedTopic.title}
         score={totalScore}
         timeRemaining={currentScreen === 'playing' ? timeRemaining : undefined}
         totalTime={currentPhrase?.estimatedTime || 45}
         isTimerRunning={isTimerRunning}
         currentPhraseNum={currentPhraseIndex + 1}
         totalPhrases={selectedTopic.phrases.length}
-        isMuted={isMuted}
-        onToggleMute={handleToggleMute}
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenJsonManager={isAdminMode ? () => setIsJsonManagerOpen(true) : undefined}
         showInGameControls={currentScreen === 'playing'}
@@ -301,6 +308,8 @@ export default function App() {
             setTimeRemaining={setTimeRemaining}
             isTimerRunning={isTimerRunning}
             setIsTimerRunning={setIsTimerRunning}
+            onExitWithoutSaving={handleExitWithoutSaving}
+            onEarlyFinish={handleEarlyFinish}
           />
         )}
 

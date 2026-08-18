@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import {
   KeyRound,
   ArrowRight,
-  Layers,
+  Terminal,
   AlertCircle,
   User,
   Sparkles,
+  Gamepad2,
+  Cpu,
+  ShieldCheck,
+  Zap,
 } from 'lucide-react';
 import { TopicItem, GameProgress } from '../types';
 
@@ -37,14 +41,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     const cleanCode = inputCode.trim().toUpperCase();
 
     if (!cleanName) {
-      setErrorMsg('Por favor, introduce tu nombre antes de comenzar.');
+      setErrorMsg('Identificación requerida: Introduce tu nombre de jugador/a antes de iniciar.');
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
       return;
     }
 
     if (!cleanCode) {
-      setErrorMsg('Por favor, escribe el código de la actividad.');
+      setErrorMsg('Protocolo incompleto: Introduce la clave de acceso de la misión.');
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
       return;
@@ -62,12 +66,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
     if (matched) {
       setErrorMsg(null);
-      // Persist player name in localStorage for convenience
       localStorage.setItem('educaplay_player_name', cleanName);
       onSelectTopicAndStart(matched, cleanName);
     } else {
       setErrorMsg(
-        'Código no válido. Por favor, revisa el código facilitado por tu profesor/a e inténtalo de nuevo.'
+        'Clave de acceso no reconocida. Verifica el código facilitado por tu profesor/a e inténtalo de nuevo.'
       );
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
@@ -79,57 +82,66 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       id="welcome-screen"
       className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 max-w-xl mx-auto w-full select-none"
     >
-      {/* Main Access Code Card */}
-      <div className="w-full bg-white rounded-[32px] shadow-sm border border-[#EBE7DF] overflow-hidden">
-        {/* Header */}
-        <div className="bg-[#F2F0EB] text-[#43423E] p-7 md:p-8 text-center border-b border-[#EBE7DF]">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-[#EBE7DF] text-[#5A5A40] shadow-2xs mx-auto mb-3">
-            <KeyRound className="w-7 h-7 text-[#A3B18A]" />
+      {/* Gaming Tech Terminal Card */}
+      <div className="w-full hud-card rounded-[28px] overflow-hidden shadow-2xl glow-blue">
+        {/* Terminal Header */}
+        <div className="bg-[#0F172A] p-6 md:p-8 text-center border-b border-[#1E293B] relative">
+          {/* Top Status Lights */}
+          <div className="flex items-center justify-between mb-4 text-[10px] font-mono uppercase tracking-widest text-[#64748B]">
+            <span className="flex items-center gap-1.5 text-[#10B981]">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              SISTEMA LISTO
+            </span>
+            <span className="text-[#38BDF8]">TERMINAL v4.2</span>
           </div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#EBE7DF] text-[10px] font-bold text-[#5A5A40] uppercase tracking-[0.15em] mb-2 shadow-2xs">
-            <Layers className="w-3 h-3 text-[#A3B18A]" /> Actividad Interactiva
-          </span>
-          <h1 className="text-2xl md:text-3xl font-serif italic text-[#5A5A40] tracking-tight font-serif-natural">
-            Acceso a la Actividad
+
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#1E293B] border border-[#3B82F6]/40 text-[#38BDF8] shadow-inner mb-3 glow-cyan">
+            <Gamepad2 className="w-8 h-8" />
+          </div>
+
+          <h1 className="text-2xl md:text-3xl font-tech font-bold text-white tracking-wide uppercase">
+            Portal de Misión
           </h1>
-          <p className="mt-2 text-xs md:text-sm text-[#8C8984] max-w-md mx-auto font-normal leading-relaxed">
-            Escribe tu nombre y el código de la actividad facilitado por tu profesor/a para comenzar.
+          <p className="mt-2 text-xs md:text-sm text-[#94A3B8] max-w-md mx-auto font-normal leading-relaxed">
+            Ingresa tu identificación y la clave de acceso para iniciar el decodificador de oraciones.
           </p>
         </div>
 
-        {/* Form with Name and Code */}
-        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5">
-          {/* 1. Name Input */}
+        {/* Access Form */}
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5 bg-[#0B0F19]/90">
+          {/* 1. Player Name Input */}
           <div className="space-y-1.5">
             <label
               htmlFor="student-name-input"
-              className="text-[11px] uppercase tracking-[0.15em] font-bold text-[#5A5A40] flex items-center gap-1.5"
+              className="text-[11px] uppercase tracking-[0.15em] font-tech font-bold text-[#38BDF8] flex items-center gap-1.5"
             >
-              <User className="w-3.5 h-3.5 text-[#A3B18A]" />
-              Nombre y Apellidos del alumno/a
+              <User className="w-3.5 h-3.5 text-[#38BDF8]" />
+              Identificación del Jugador / Alumno
             </label>
-            <input
-              id="student-name-input"
-              type="text"
-              value={playerName}
-              onChange={(e) => {
-                setPlayerName(e.target.value);
-                if (errorMsg) setErrorMsg(null);
-              }}
-              placeholder="Ej: Laura García Morales"
-              autoFocus
-              className="w-full text-base sm:text-lg font-medium px-4 py-3.5 rounded-2xl bg-[#FAF9F6] border-2 border-[#E5E0D5] text-[#43423E] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all shadow-2xs"
-            />
+            <div className="relative">
+              <input
+                id="student-name-input"
+                type="text"
+                value={playerName}
+                onChange={(e) => {
+                  setPlayerName(e.target.value);
+                  if (errorMsg) setErrorMsg(null);
+                }}
+                placeholder="Ej: Laura García Morales"
+                autoFocus
+                className="w-full text-base sm:text-lg font-medium px-4 py-3.5 rounded-xl bg-[#1E293B]/70 border-2 border-[#334155] text-white focus:outline-hidden focus:border-[#3B82F6] focus:bg-[#1E293B] transition-all placeholder:text-[#64748B] focus:glow-blue"
+              />
+            </div>
           </div>
 
-          {/* 2. Code Input */}
+          {/* 2. Access Code Input */}
           <div className="space-y-1.5">
             <label
               htmlFor="activity-code-input"
-              className="text-[11px] uppercase tracking-[0.15em] font-bold text-[#5A5A40] flex items-center gap-1.5"
+              className="text-[11px] uppercase tracking-[0.15em] font-tech font-bold text-[#10B981] flex items-center gap-1.5"
             >
-              <KeyRound className="w-3.5 h-3.5 text-[#A3B18A]" />
-              Código de la actividad
+              <KeyRound className="w-3.5 h-3.5 text-[#10B981]" />
+              Clave de Acceso a la Actividad
             </label>
             <div className={`relative ${isShaking ? 'animate-shake' : ''}`}>
               <input
@@ -140,39 +152,43 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   setInputCode(e.target.value.toUpperCase());
                   if (errorMsg) setErrorMsg(null);
                 }}
-                placeholder="Ej: SO101"
-                className="w-full text-center text-xl sm:text-2xl font-mono uppercase tracking-widest px-4 py-3.5 rounded-2xl bg-[#FAF9F6] border-2 border-[#E5E0D5] text-[#43423E] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all shadow-2xs"
+                placeholder=""
+                className="w-full text-center text-xl sm:text-2xl font-mono font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl bg-[#1E293B]/70 border-2 border-[#334155] text-[#38BDF8] focus:outline-hidden focus:border-[#10B981] focus:bg-[#1E293B] transition-all focus:glow-cyan"
               />
             </div>
           </div>
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="p-3 bg-[#FAF9F6] border border-[#E07A5F] rounded-xl text-[#E07A5F] text-xs font-semibold flex items-start gap-2 animate-shake">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="p-3 bg-[#7F1D1D]/50 border border-[#EF4444] rounded-xl text-[#FCA5A5] text-xs font-semibold flex items-start gap-2 animate-shake">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#EF4444]" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* Submit Action */}
+          {/* Launch Button */}
           <button
             type="submit"
             id="btn-submit-code"
-            className="w-full py-4 bg-[#5A5A40] hover:bg-[#474732] active:scale-98 text-white font-bold text-sm tracking-wider uppercase rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer mt-2"
+            className="w-full py-4 bg-gradient-to-r from-[#2563EB] via-[#3B82F6] to-[#06B6D4] hover:from-[#1D4ED8] hover:to-[#0891B2] active:scale-98 text-white font-tech font-bold text-base tracking-widest uppercase rounded-xl shadow-lg glow-blue transition-all flex items-center justify-center gap-3 cursor-pointer mt-2"
           >
-            <span>Comenzar Juego</span>
-            <ArrowRight className="w-4 h-4" />
+            <Zap className="w-5 h-5 fill-current" />
+            <span>INICIAR MISIÓN</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
         </form>
 
-        {/* Footer info & Links */}
-        <div className="px-6 py-4 bg-[#FAF9F6] border-t border-[#EBE7DF] flex items-center justify-center text-xs text-[#8C8984]">
+        {/* Terminal Footer */}
+        <div className="px-6 py-4 bg-[#0F172A] border-t border-[#1E293B] flex items-center justify-between text-xs text-[#94A3B8]">
+          <span className="flex items-center gap-1 font-mono text-[11px] text-[#64748B]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" /> MODO PROTEGIDO
+          </span>
           <button
             type="button"
             onClick={onOpenHistory}
-            className="text-[#5A5A40] hover:text-[#43423E] font-bold uppercase tracking-wider underline underline-offset-4 flex items-center gap-1 cursor-pointer"
+            className="text-[#38BDF8] hover:text-white font-tech font-bold uppercase tracking-wider underline underline-offset-4 flex items-center gap-1 cursor-pointer transition-colors"
           >
-            Consultar historial de frases resueltas
+            Ver Registro de Misiones
           </button>
         </div>
       </div>

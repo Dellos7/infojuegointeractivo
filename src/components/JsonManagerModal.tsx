@@ -20,6 +20,8 @@ import {
   CheckCircle2,
   FolderPlus,
   Edit2,
+  Cpu,
+  Zap,
 } from 'lucide-react';
 import { PhrasesDataset, TopicItem, PhraseItem } from '../types';
 import { tokenizeSentence } from '../utils/storage';
@@ -53,7 +55,6 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
 
-  // Sync state whenever modal opens or dataset changes externally
   useEffect(() => {
     if (isOpen) {
       const cloned = JSON.parse(JSON.stringify(currentDataset));
@@ -68,15 +69,12 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle switching tabs
   const handleSwitchTab = (newMode: EditorMode) => {
     if (newMode === 'json') {
-      // Convert current draft into formatted JSON string
       setJsonText(JSON.stringify(datasetDraft, null, 2));
       setErrorMsg(null);
       setMode('json');
     } else {
-      // Parse JSON string back into draft
       try {
         const parsed = JSON.parse(jsonText);
         validateDatasetStructure(parsed);
@@ -88,7 +86,7 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
         setMode('simple');
       } catch (err: unknown) {
         if (err instanceof Error) {
-          setErrorMsg(`Corrige los errores del JSON antes de pasar al editor visual: ${err.message}`);
+          setErrorMsg(`Corrige los errores de sintaxis del JSON antes de cambiar: ${err.message}`);
         } else {
           setErrorMsg('Error de sintaxis en el JSON.');
         }
@@ -120,7 +118,6 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
     }
   };
 
-  // Save current configuration
   const handleSave = () => {
     try {
       let finalData: PhrasesDataset;
@@ -134,7 +131,7 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
       }
 
       onSaveDataset(finalData);
-      setSuccessMsg('¡Configuración guardada y aplicada correctamente!');
+      setSuccessMsg('¡Configuración guardada y aplicada con éxito!');
       setTimeout(() => {
         setSuccessMsg(null);
         onClose();
@@ -148,7 +145,6 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
     }
   };
 
-  // --- Visual Editor Helpers ---
   const currentTopic = datasetDraft.topics[selectedTopicIndex] || datasetDraft.topics[0];
 
   const updateCurrentTopic = (updatedFields: Partial<TopicItem>) => {
@@ -244,7 +240,6 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
     setErrorMsg(null);
   };
 
-  // --- Copy & Download ---
   const handleCopy = () => {
     const textToCopy =
       mode === 'json' ? jsonText : JSON.stringify(datasetDraft, null, 2);
@@ -260,7 +255,7 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'frases_juego_educaplay.json';
+    a.download = 'frases_juego_educativo.json';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -271,441 +266,388 @@ export const JsonManagerModal: React.FC<JsonManagerModalProps> = ({
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#43423E]/50 backdrop-blur-xs"
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-sm"
       >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-[32px] shadow-xl border border-[#EBE7DF] w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden"
+          className="bg-[#0F172A] rounded-[24px] shadow-2xl border border-[#1E293B] w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden glow-blue"
         >
-          {/* Header with Title and Mode Switcher Tabs */}
-          <div className="bg-[#F2F0EB] text-[#43423E] px-6 py-4 flex flex-wrap items-center justify-between border-b border-[#EBE7DF] gap-3">
+          {/* Header */}
+          <div className="bg-[#0B0F19] text-[#E2E8F0] px-6 py-4 flex flex-wrap items-center justify-between border-b border-[#1E293B] gap-3">
             <div className="flex items-center gap-3">
-              <div className="bg-white p-2 rounded-xl border border-[#EBE7DF] text-[#5A5A40] shadow-2xs">
-                <SlidersHorizontal className="w-5 h-5 text-[#A3B18A]" />
+              <div className="bg-[#1E293B] p-2.5 rounded-xl border border-[#334155] text-[#38BDF8]">
+                <Cpu className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-serif italic text-lg sm:text-xl font-bold text-[#5A5A40] font-serif-natural">
-                  Configurador de Actividades y Frases
+                <h3 className="font-tech font-bold text-lg sm:text-xl text-white uppercase tracking-wider">
+                  Configurador de Misiones y Matrices JSON
                 </h3>
-                <p className="text-xs text-[#8C8984]">
-                  Gestiona los tópicos, códigos de acceso y oraciones ordenadas
+                <p className="text-xs font-mono text-[#94A3B8]">
+                  Modo Administrador - Gestión de temáticas, códigos y oraciones
                 </p>
               </div>
             </div>
 
             {/* Mode Switcher Tabs */}
-            <div className="flex items-center bg-white p-1 rounded-2xl border border-[#EBE7DF] shadow-2xs">
+            <div className="flex items-center bg-[#1E293B] p-1 rounded-xl border border-[#334155]">
               <button
                 type="button"
                 onClick={() => handleSwitchTab('simple')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   mode === 'simple'
-                    ? 'bg-[#5A5A40] text-white shadow-xs'
-                    : 'text-[#8C8984] hover:text-[#43423E]'
+                    ? 'bg-[#3B82F6] text-white shadow-md'
+                    : 'text-[#94A3B8] hover:text-white'
                 }`}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Modo Simple (Formulario)</span>
+                <span>Formulario Visual</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleSwitchTab('json')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   mode === 'json'
-                    ? 'bg-[#5A5A40] text-white shadow-xs'
-                    : 'text-[#8C8984] hover:text-[#43423E]'
+                    ? 'bg-[#3B82F6] text-white shadow-md'
+                    : 'text-[#94A3B8] hover:text-white'
                 }`}
               >
                 <Code className="w-3.5 h-3.5" />
-                <span>Modo JSON Directo</span>
+                <span>Código JSON</span>
               </button>
             </div>
 
             <button
               onClick={onClose}
-              title="Cerrar ventana"
-              className="p-2 rounded-xl bg-white hover:bg-[#FAF9F6] border border-[#EBE7DF] active:scale-95 transition-all text-[#8C8984] hover:text-[#43423E] cursor-pointer"
+              title="Cerrar"
+              className="p-2 rounded-xl bg-[#1E293B] hover:bg-[#334155] border border-[#334155] active:scale-95 transition-all text-[#94A3B8] hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Body Content */}
-          <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5 bg-[#FAF9F6]">
-            {/* Quick Actions (Copy / Download) */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#8C8984] bg-white p-3 rounded-2xl border border-[#EBE7DF]">
-              <span className="flex items-center gap-1.5 font-bold text-[#5A5A40]">
-                <FileText className="w-4 h-4 text-[#A3B18A]" />
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5 bg-[#0B0F19]/90 text-[#E2E8F0]">
+            {/* Quick Actions Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono bg-[#0F172A] p-3 rounded-xl border border-[#1E293B]">
+              <span className="flex items-center gap-1.5 font-bold text-[#38BDF8]">
+                <FileText className="w-4 h-4 text-[#38BDF8]" />
                 {mode === 'simple'
-                  ? 'Edita visualmente los temas y frases. Se sincronizará automáticamente con el JSON.'
-                  : 'Modifica directamente el texto JSON con la estructura completa.'}
+                  ? 'Editor visual sincronizado automáticamente con la estructura JSON.'
+                  : 'Modifica directamente el árbol JSON de las actividades.'}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#FAF9F6] hover:bg-[#F2F0EB] text-[#5A5A40] border border-[#E5E0D5] font-bold text-xs uppercase tracking-wider cursor-pointer transition-all"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#1E293B] hover:bg-[#334155] text-white border border-[#334155] font-mono text-xs uppercase cursor-pointer transition-all"
                 >
-                  <Copy className="w-3.5 h-3.5 text-[#A3B18A]" />
-                  <span>{copied ? '¡Copiado!' : 'Copiar JSON'}</span>
+                  {copied ? <Check className="w-3.5 h-3.5 text-[#10B981]" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copiado' : 'Copiar'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#FAF9F6] hover:bg-[#F2F0EB] text-[#5A5A40] border border-[#E5E0D5] font-bold text-xs uppercase tracking-wider cursor-pointer transition-all"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#1E293B] hover:bg-[#334155] text-white border border-[#334155] font-mono text-xs uppercase cursor-pointer transition-all"
                 >
-                  <Download className="w-3.5 h-3.5 text-[#A3B18A]" />
-                  <span>Descargar archivo</span>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Descargar .json</span>
                 </button>
               </div>
             </div>
 
-            {/* Error Message */}
+            {/* Error / Success Notifications */}
             {errorMsg && (
-              <div className="p-3.5 bg-white border border-[#E07A5F] rounded-2xl text-[#E07A5F] text-xs font-semibold flex items-start gap-2 animate-shake">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="p-3 bg-[#7F1D1D]/70 border border-[#EF4444] rounded-xl text-[#FCA5A5] text-xs font-mono flex items-start gap-2 animate-shake">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#EF4444]" />
                 <span>{errorMsg}</span>
               </div>
             )}
-
-            {/* Success Message */}
             {successMsg && (
-              <div className="p-3.5 bg-white border border-[#A3B18A] rounded-2xl text-[#5A5A40] text-xs font-semibold flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#A3B18A]" />
+              <div className="p-3 bg-[#064E3B]/70 border border-[#10B981] rounded-xl text-[#A7F3D0] text-xs font-mono flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-[#10B981]" />
                 <span>{successMsg}</span>
               </div>
             )}
 
-            {/* --- TAB 1: SIMPLE MODE (FORM & VISUAL BUILDER) --- */}
-            {mode === 'simple' && currentTopic && (
+            {/* MODE 1: VISUAL SIMPLE EDITOR */}
+            {mode === 'simple' && (
               <div className="space-y-6">
-                {/* 1. Topic Selector and Creation Bar */}
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE7DF] space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <label className="text-xs font-bold text-[#5A5A40] uppercase tracking-wider flex items-center gap-1.5">
-                      <Layers className="w-4 h-4 text-[#A3B18A]" />
-                      Seleccionar Tópico / Actividad:
+                {/* Topic Selector Tabs */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-mono font-bold uppercase tracking-wider text-[#38BDF8]">
+                      1. Selecciona o Añade una Actividad:
                     </label>
-                    <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCreateTopic}
+                      className="flex items-center gap-1 text-xs font-mono font-bold text-[#10B981] hover:text-[#34D399] cursor-pointer"
+                    >
+                      <FolderPlus className="w-3.5 h-3.5" />
+                      <span>+ Crear Nueva Actividad</span>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {datasetDraft.topics.map((t, idx) => (
                       <button
+                        key={t.id || `top-${idx}`}
                         type="button"
-                        onClick={handleCreateTopic}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FAF9F6] hover:bg-[#F2F0EB] text-[#5A5A40] border border-[#E5E0D5] font-bold text-xs uppercase tracking-wider cursor-pointer transition-all"
+                        onClick={() => {
+                          setSelectedTopicIndex(idx);
+                          setErrorMsg(null);
+                        }}
+                        className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer border ${
+                          selectedTopicIndex === idx
+                            ? 'bg-[#3B82F6] border-[#60A5FA] text-white shadow-md glow-blue'
+                            : 'bg-[#0F172A] border-[#1E293B] text-[#94A3B8] hover:text-white hover:border-[#334155]'
+                        }`}
                       >
-                        <FolderPlus className="w-3.5 h-3.5 text-[#A3B18A]" />
-                        <span>+ Nuevo Tópico</span>
+                        <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+                        <span>{t.title || `Actividad ${idx + 1}`}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 bg-black/40 rounded border border-white/10 opacity-80">
+                          {t.accessCode || t.id}
+                        </span>
                       </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Selected Topic Details Card */}
+                {currentTopic && (
+                  <div className="p-4 sm:p-5 bg-[#0F172A] rounded-2xl border border-[#1E293B] space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#1E293B] pb-3">
+                      <h4 className="font-tech font-bold text-white text-base uppercase flex items-center gap-2">
+                        <Edit2 className="w-4 h-4 text-[#38BDF8]" />
+                        Editando Actividad: {currentTopic.title}
+                      </h4>
                       {datasetDraft.topics.length > 1 && (
                         <button
                           type="button"
                           onClick={handleDeleteCurrentTopic}
-                          title="Eliminar este tópico"
-                          className="p-1.5 rounded-xl bg-white hover:bg-[#FAF9F6] text-[#E07A5F] border border-[#EBE7DF] cursor-pointer transition-all"
+                          className="flex items-center gap-1 text-xs font-mono text-[#EF4444] hover:text-[#F87171] cursor-pointer"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Eliminar esta actividad</span>
                         </button>
                       )}
                     </div>
-                  </div>
 
-                  {/* Topic Pill selector */}
-                  <div className="flex flex-wrap gap-2">
-                    {datasetDraft.topics.map((topic, idx) => {
-                      const isSelected = idx === selectedTopicIndex;
-                      return (
-                        <button
-                          key={topic.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedTopicIndex(idx);
-                            setErrorMsg(null);
-                          }}
-                          className={`px-4 py-2.5 rounded-xl text-left border transition-all cursor-pointer flex items-center gap-2.5 ${
-                            isSelected
-                              ? 'bg-[#5A5A40] border-[#5A5A40] text-white shadow-xs'
-                              : 'bg-[#FAF9F6] border-[#EBE7DF] text-[#43423E] hover:border-[#5A5A40]'
-                          }`}
-                        >
-                          <span className="font-semibold text-xs truncate max-w-[200px]">
-                            {topic.title}
-                          </span>
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase ${
-                              isSelected
-                                ? 'bg-white/20 text-white'
-                                : 'bg-[#EBE7DF] text-[#5A5A40]'
-                            }`}
-                          >
-                            {topic.accessCode || topic.id}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-mono text-[#94A3B8] uppercase">
+                          Título de la Actividad:
+                        </label>
+                        <input
+                          type="text"
+                          value={currentTopic.title}
+                          onChange={(e) => updateCurrentTopic({ title: e.target.value })}
+                          className="w-full text-sm font-medium px-3.5 py-2.5 rounded-xl bg-[#1E293B] border border-[#334155] text-white focus:outline-hidden focus:border-[#3B82F6]"
+                        />
+                      </div>
 
-                  {/* Topic Metadata Inputs */}
-                  <div className="pt-3 border-t border-[#EBE7DF] grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[11px] font-bold text-[#8C8984] uppercase tracking-wider block mb-1">
-                        Título de la Actividad
-                      </label>
-                      <input
-                        type="text"
-                        value={currentTopic.title}
-                        onChange={(e) => updateCurrentTopic({ title: e.target.value })}
-                        placeholder="Ej: Sistemas operativos y aplicaciones"
-                        className="w-full text-xs font-semibold px-3 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E5E0D5] text-[#43423E] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all"
-                      />
-                    </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-mono text-[#10B981] uppercase flex items-center gap-1">
+                          <KeyRound className="w-3 h-3 text-[#10B981]" />
+                          Clave de Acceso para el Alumno (Código):
+                        </label>
+                        <input
+                          type="text"
+                          value={currentTopic.accessCode || ''}
+                          onChange={(e) => updateCurrentTopic({ accessCode: e.target.value.toUpperCase() })}
+                          placeholder="EJ: SO101"
+                          className="w-full text-sm font-mono font-bold uppercase tracking-wider px-3.5 py-2.5 rounded-xl bg-[#1E293B] border border-[#10B981]/50 text-[#38BDF8] focus:outline-hidden focus:border-[#10B981]"
+                        />
+                      </div>
 
-                    <div>
-                      <label className="text-[11px] font-bold text-[#8C8984] uppercase tracking-wider block mb-1 flex items-center gap-1">
-                        <KeyRound className="w-3.5 h-3.5 text-[#A3B18A]" />
-                        Código de Acceso para el Alumno
-                      </label>
-                      <input
-                        type="text"
-                        value={currentTopic.accessCode || ''}
-                        onChange={(e) =>
-                          updateCurrentTopic({
-                            accessCode: e.target.value.toUpperCase().replace(/\s+/g, ''),
-                          })
-                        }
-                        placeholder="Ej: SO101, SISTEMAS26"
-                        className="w-full text-xs font-mono font-bold uppercase px-3 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E5E0D5] text-[#5A5A40] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all"
-                      />
-                    </div>
-
-                    <div className="sm:col-span-2">
-                      <label className="text-[11px] font-bold text-[#8C8984] uppercase tracking-wider block mb-1">
-                        Descripción o Instrucción General
-                      </label>
-                      <input
-                        type="text"
-                        value={currentTopic.description || ''}
-                        onChange={(e) => updateCurrentTopic({ description: e.target.value })}
-                        placeholder="Breve descripción del contenido de las frases..."
-                        className="w-full text-xs px-3 py-2 rounded-xl bg-[#FAF9F6] border border-[#E5E0D5] text-[#43423E] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all"
-                      />
+                      <div className="sm:col-span-2 space-y-1">
+                        <label className="text-[11px] font-mono text-[#94A3B8] uppercase">
+                          Descripción o Instrucciones:
+                        </label>
+                        <input
+                          type="text"
+                          value={currentTopic.description || ''}
+                          onChange={(e) => updateCurrentTopic({ description: e.target.value })}
+                          className="w-full text-sm px-3.5 py-2.5 rounded-xl bg-[#1E293B] border border-[#334155] text-white focus:outline-hidden focus:border-[#3B82F6]"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* 2. Phrases List for Current Topic */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-[#5A5A40] uppercase tracking-wider flex items-center gap-1.5">
-                      <Edit2 className="w-4 h-4 text-[#A3B18A]" />
-                      Frases configuradas en este tema ({currentTopic.phrases.length})
-                    </h4>
-                    <button
-                      type="button"
-                      onClick={handleAddPhrase}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#5A5A40] hover:bg-[#474732] active:scale-95 text-white font-bold text-xs uppercase tracking-wider cursor-pointer shadow-xs transition-all"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Añadir Frase</span>
-                    </button>
-                  </div>
-
-                  {/* List of Phrases */}
+                {/* Phrases Section */}
+                {currentTopic && (
                   <div className="space-y-3">
-                    {currentTopic.phrases.map((phrase, pIdx) => {
-                      const tokens = tokenizeSentence(phrase.fullSentence || '');
-                      return (
-                        <div
-                          key={phrase.id || `phrase-row-${pIdx}`}
-                          className="bg-white p-4 sm:p-5 rounded-2xl border border-[#EBE7DF] shadow-2xs space-y-3 hover:border-[#D4D2CD] transition-all"
-                        >
-                          {/* Phrase Row Header */}
-                          <div className="flex items-center justify-between">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FAF9F6] border border-[#EBE7DF] text-[11px] font-bold text-[#5A5A40]">
-                              Frase #{pIdx + 1}
-                            </span>
-                            {currentTopic.phrases.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => handleDeletePhrase(pIdx)}
-                                title="Eliminar esta frase"
-                                className="text-xs text-[#8C8984] hover:text-[#E07A5F] p-1 rounded-lg hover:bg-[#FAF9F6] transition-colors cursor-pointer flex items-center gap-1 font-semibold"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Eliminar</span>
-                              </button>
-                            )}
-                          </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-mono font-bold uppercase tracking-wider text-[#38BDF8]">
+                        2. Lista de Frases de la Actividad ({currentTopic.phrases?.length || 0}):
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleAddPhrase}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#1E293B] hover:bg-[#334155] border border-[#334155] text-xs font-mono font-bold text-[#10B981] cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Añadir Frase</span>
+                      </button>
+                    </div>
 
-                          {/* Clue / Question Input */}
-                          <div>
-                            <label className="text-[11px] font-bold text-[#8C8984] uppercase tracking-wider block mb-1">
-                              Enunciado / Pregunta / Pista (lo que leerá el alumno):
-                            </label>
-                            <input
-                              type="text"
-                              value={phrase.clue}
-                              onChange={(e) =>
-                                handleUpdatePhrase(pIdx, { clue: e.target.value })
-                              }
-                              placeholder="Ej: ¿Qué programa gestiona los recursos del hardware?"
-                              className="w-full text-xs font-serif italic text-[#43423E] px-3 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E5E0D5] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all font-serif-natural"
-                            />
-                          </div>
-
-                          {/* Full Ordered Sentence Input */}
-                          <div>
-                            <label className="text-[11px] font-bold text-[#8C8984] uppercase tracking-wider block mb-1">
-                              Oración completa ordenada (las palabras que deberá ordenar):
-                            </label>
-                            <input
-                              type="text"
-                              value={phrase.fullSentence}
-                              onChange={(e) =>
-                                handleUpdatePhrase(pIdx, { fullSentence: e.target.value })
-                              }
-                              placeholder="Ej: El sistema operativo administra la memoria del ordenador ."
-                              className="w-full text-xs font-medium text-[#43423E] px-3 py-2.5 rounded-xl bg-[#FAF9F6] border border-[#E5E0D5] focus:outline-hidden focus:border-[#5A5A40] focus:bg-white transition-all"
-                            />
-                            {/* Token Preview */}
-                            {tokens.length > 0 && (
-                              <div className="mt-2 flex flex-wrap items-center gap-1.5 pt-1">
-                                <span className="text-[10px] uppercase font-bold text-[#8C8984] mr-1">
-                                  Palabras ({tokens.length}):
+                    <div className="space-y-3">
+                      {currentTopic.phrases?.map((phrase, pIdx) => {
+                        const wordTokens = tokenizeSentence(phrase.fullSentence || '');
+                        return (
+                          <div
+                            key={phrase.id || `p-${pIdx}`}
+                            className="p-4 rounded-xl border border-[#1E293B] bg-[#0F172A] space-y-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-mono font-bold text-[#38BDF8] flex items-center gap-1.5">
+                                <span className="w-5 h-5 rounded bg-[#1E293B] border border-[#334155] flex items-center justify-center text-[10px]">
+                                  {pIdx + 1}
                                 </span>
-                                {tokens.map((token, tIdx) => (
+                                Frase #{pIdx + 1}
+                              </span>
+
+                              {currentTopic.phrases.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePhrase(pIdx)}
+                                  className="text-xs font-mono text-[#EF4444] hover:underline flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Eliminar frase</span>
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              <div className="sm:col-span-2 space-y-1">
+                                <label className="text-[10px] font-mono uppercase text-[#94A3B8]">
+                                  Enunciado / Pregunta:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={phrase.clue}
+                                  onChange={(e) =>
+                                    handleUpdatePhrase(pIdx, { clue: e.target.value })
+                                  }
+                                  className="w-full text-xs sm:text-sm px-3 py-2 rounded-lg bg-[#1E293B] border border-[#334155] text-white focus:outline-hidden focus:border-[#3B82F6]"
+                                />
+                              </div>
+
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-mono uppercase text-[#94A3B8] flex items-center gap-1">
+                                  <Clock className="w-3 h-3 text-[#38BDF8]" />
+                                  Tiempo (segundos):
+                                </label>
+                                <input
+                                  type="number"
+                                  min={10}
+                                  max={300}
+                                  value={phrase.estimatedTime || 45}
+                                  onChange={(e) =>
+                                    handleUpdatePhrase(pIdx, {
+                                      estimatedTime: parseInt(e.target.value, 10) || 45,
+                                    })
+                                  }
+                                  className="w-full text-xs sm:text-sm font-mono px-3 py-2 rounded-lg bg-[#1E293B] border border-[#334155] text-white focus:outline-hidden focus:border-[#3B82F6]"
+                                />
+                              </div>
+
+                              <div className="sm:col-span-3 space-y-1">
+                                <label className="text-[10px] font-mono uppercase text-[#10B981]">
+                                  Oración completa ordenada (las palabras que el alumno deberá ordenar):
+                                </label>
+                                <input
+                                  type="text"
+                                  value={phrase.fullSentence}
+                                  onChange={(e) =>
+                                    handleUpdatePhrase(pIdx, { fullSentence: e.target.value })
+                                  }
+                                  className="w-full text-xs sm:text-sm font-mono px-3 py-2 rounded-lg bg-[#1E293B] border border-[#334155] text-[#38BDF8] focus:outline-hidden focus:border-[#10B981]"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Preview chips */}
+                            <div className="pt-1">
+                              <span className="text-[10px] font-mono uppercase text-[#64748B] block mb-1">
+                                Vista previa de fichas generadas ({wordTokens.length}):
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {wordTokens.map((token, wIdx) => (
                                   <span
-                                    key={`tok-${pIdx}-${tIdx}`}
-                                    className="px-2 py-0.5 rounded-md bg-[#F2F0EB] text-[#5A5A40] text-[11px] font-medium border border-[#EBE7DF]"
+                                    key={`tok-${pIdx}-${wIdx}`}
+                                    className="px-2 py-0.5 rounded bg-[#1E293B] border border-[#334155] text-[11px] font-mono text-[#E2E8F0]"
                                   >
                                     {token}
                                   </span>
                                 ))}
                               </div>
-                            )}
-                          </div>
-
-                          {/* Estimated Time in Seconds */}
-                          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-[#FAF9F6]">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-3.5 h-3.5 text-[#A3B18A]" />
-                              <label className="text-[11px] font-bold text-[#8C8984] uppercase tracking-wider">
-                                Tiempo estimado (segundos):
-                              </label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {[30, 45, 60, 90].map((preset) => (
-                                <button
-                                  key={preset}
-                                  type="button"
-                                  onClick={() =>
-                                    handleUpdatePhrase(pIdx, { estimatedTime: preset })
-                                  }
-                                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                    phrase.estimatedTime === preset
-                                      ? 'bg-[#5A5A40] text-white'
-                                      : 'bg-[#FAF9F6] text-[#8C8984] hover:text-[#43423E] border border-[#EBE7DF]'
-                                  }`}
-                                >
-                                  {preset}s
-                                </button>
-                              ))}
-                              <input
-                                type="number"
-                                min={10}
-                                max={300}
-                                value={phrase.estimatedTime}
-                                onChange={(e) =>
-                                  handleUpdatePhrase(pIdx, {
-                                    estimatedTime: Math.max(10, parseInt(e.target.value) || 45),
-                                  })
-                                }
-                                className="w-16 text-center text-xs font-bold px-2 py-1 rounded-lg bg-[#FAF9F6] border border-[#E5E0D5] text-[#43423E]"
-                              />
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
-            {/* --- TAB 2: RAW JSON CODE MODE --- */}
+            {/* MODE 2: DIRECT JSON CODE EDITOR */}
             {mode === 'json' && (
-              <div className="space-y-3">
-                <div className="relative">
-                  <textarea
-                    value={jsonText}
-                    onChange={(e) => {
-                      setJsonText(e.target.value);
-                      if (errorMsg) setErrorMsg(null);
-                    }}
-                    className="w-full h-96 font-mono text-xs p-4 bg-[#2D2C28] text-[#FAF9F6] rounded-2xl border border-[#43423E] focus:outline-hidden focus:ring-2 focus:ring-[#A3B18A] leading-relaxed resize-y"
-                    spellCheck={false}
-                  />
-                </div>
-
-                <div className="text-xs text-[#8C8984] bg-white p-4 rounded-2xl border border-[#EBE7DF]">
-                  <p className="font-bold text-[#5A5A40] mb-1">
-                    Estructura requerida por temática con código de acceso:
-                  </p>
-                  <code className="text-[#43423E] block whitespace-pre-wrap font-mono text-[11px]">{`{
-  "topics": [
-    {
-      "id": "so-sistemas",
-      "accessCode": "SO101",
-      "title": "Sistemas operativos...",
-      "description": "...",
-      "phrases": [
-        {
-          "id": "1",
-          "clue": "¿Pregunta o enunciado?",
-          "fullSentence": "Oración completa ordenada .",
-          "estimatedTime": 45
-        }
-      ]
-    }
-  ]
-}`}</code>
-                </div>
+              <div className="space-y-2">
+                <textarea
+                  id="json-textarea-editor"
+                  value={jsonText}
+                  onChange={(e) => {
+                    setJsonText(e.target.value);
+                    if (errorMsg) setErrorMsg(null);
+                  }}
+                  rows={18}
+                  className="w-full p-4 font-mono text-xs sm:text-sm bg-[#0A0E17] border border-[#1E293B] rounded-2xl text-[#38BDF8] focus:outline-hidden focus:border-[#3B82F6] leading-relaxed shadow-inner"
+                  spellCheck={false}
+                />
               </div>
             )}
           </div>
 
           {/* Footer Actions */}
-          <div className="px-6 py-4 bg-[#FAF9F6] border-t border-[#EBE7DF] flex flex-wrap items-center justify-between gap-3">
+          <div className="px-6 py-4 bg-[#0B0F19] border-t border-[#1E293B] flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => {
                 if (
                   window.confirm(
-                    '¿Restablecer todas las frases y códigos al conjunto predeterminado inicial?'
+                    '¿Deseas restaurar todas las temáticas y frases al contenido por defecto?'
                   )
                 ) {
                   onResetToDefault();
                   onClose();
                 }
               }}
-              className="flex items-center gap-1.5 text-xs text-[#8C8984] hover:text-[#5A5A40] font-bold uppercase tracking-wider cursor-pointer transition-colors"
+              className="flex items-center gap-1.5 text-xs font-mono text-[#94A3B8] hover:text-white uppercase tracking-wider cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>Restablecer predeterminados</span>
+              <span>Restaurar Valores por Defecto</span>
             </button>
 
             <div className="flex items-center gap-2 ml-auto">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-xl text-[#8C8984] hover:text-[#43423E] font-bold text-xs uppercase tracking-wider cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-[#1E293B] hover:bg-[#334155] text-[#94A3B8] hover:text-white font-mono text-xs uppercase tracking-wider cursor-pointer transition-all"
               >
                 Cancelar
               </button>
+
               <button
                 type="button"
+                id="btn-save-json-modal"
                 onClick={handleSave}
-                className="px-6 py-2.5 bg-[#5A5A40] hover:bg-[#474732] active:scale-95 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#3B82F6] hover:from-[#1D4ED8] hover:to-[#2563EB] text-white font-tech font-bold text-xs uppercase tracking-widest cursor-pointer transition-all shadow-md glow-blue flex items-center gap-2"
               >
                 <Check className="w-4 h-4" />
                 <span>Guardar y Aplicar Cambios</span>
